@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/farhanaltariq/fiberplate/common/codes"
-	"github.com/farhanaltariq/fiberplate/common/status"
-	"github.com/farhanaltariq/fiberplate/database/models"
-	"github.com/farhanaltariq/fiberplate/utils"
+	"github.com/farhanaltariq/fiberplate/app/common/codes"
+	"github.com/farhanaltariq/fiberplate/app/common/status"
+	"github.com/farhanaltariq/fiberplate/app/database/models"
+	"github.com/farhanaltariq/fiberplate/app/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt"
 	"github.com/sirupsen/logrus"
@@ -20,7 +20,7 @@ func CommonMiddleware(c *fiber.Ctx) error {
 }
 
 func validateToken(tokenString string, jwtSecret []byte) error {
-	token, err := jwt.ParseWithClaims(tokenString, &models.Claims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &models.Claims{}, func(token *jwt.Token) (any, error) {
 		return jwtSecret, nil
 	})
 
@@ -31,7 +31,7 @@ func validateToken(tokenString string, jwtSecret []byte) error {
 	_, ok := token.Claims.(*models.Claims)
 	if !ok {
 		//lint:ignore ST1005 will sent to user
-		return fmt.Errorf("Invalid token")
+		return fmt.Errorf("invalid token")
 	}
 
 	return nil

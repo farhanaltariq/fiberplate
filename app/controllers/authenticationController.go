@@ -3,12 +3,12 @@ package controllers
 import (
 	"encoding/json"
 
-	"github.com/farhanaltariq/fiberplate/common/codes"
-	"github.com/farhanaltariq/fiberplate/common/status"
-	"github.com/farhanaltariq/fiberplate/common/usertype"
-	"github.com/farhanaltariq/fiberplate/database/models"
-	"github.com/farhanaltariq/fiberplate/middleware"
-	"github.com/farhanaltariq/fiberplate/utils"
+	"github.com/farhanaltariq/fiberplate/app/common/codes"
+	"github.com/farhanaltariq/fiberplate/app/common/status"
+	"github.com/farhanaltariq/fiberplate/app/common/usertype"
+	"github.com/farhanaltariq/fiberplate/app/database/models"
+	"github.com/farhanaltariq/fiberplate/app/middleware"
+	"github.com/farhanaltariq/fiberplate/app/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
 )

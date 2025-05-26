@@ -1,7 +1,7 @@
 package services
 
 import (
-	"github.com/farhanaltariq/fiberplate/database/models"
+	"github.com/farhanaltariq/fiberplate/app/database/models"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )

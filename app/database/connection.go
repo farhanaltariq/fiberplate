@@ -3,8 +3,8 @@ package database
 import (
 	"fmt"
 
-	model "github.com/farhanaltariq/fiberplate/database/models"
-	"github.com/farhanaltariq/fiberplate/utils"
+	model "github.com/farhanaltariq/fiberplate/app/database/models"
+	"github.com/farhanaltariq/fiberplate/app/utils"
 
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
@@ -44,7 +44,8 @@ func Connect() error {
 		return fmt.Errorf("driver not set")
 	}
 
-	db, err := gorm.Open(config, &gorm.Config{})
+	var err error
+	db, err = gorm.Open(config, &gorm.Config{})
 	if err != nil {
 		logrus.Errorln("Error connecting to database", err)
 		return err

@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/farhanaltariq/fiberplate/services"
+	"github.com/farhanaltariq/fiberplate/app/services"
 	"gorm.io/gorm"
 )
 

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/farhanaltariq/fiberplate/database/models"
+	"github.com/farhanaltariq/fiberplate/app/database/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/joho/godotenv"

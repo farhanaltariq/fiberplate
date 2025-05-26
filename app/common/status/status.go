@@ -3,11 +3,11 @@ package status
 import (
 	"fmt"
 
-	"github.com/farhanaltariq/fiberplate/common"
+	"github.com/farhanaltariq/fiberplate/app/common"
 	"github.com/gofiber/fiber/v2"
 )
 
-func Errorf(c *fiber.Ctx, codes int, message string, args ...interface{}) error {
+func Errorf(c *fiber.Ctx, codes int, message string, args ...any) error {
 	if codes >= 200 && codes < 300 {
 		return Successf(c, codes, message, args...)
 	}
@@ -20,8 +20,8 @@ func Errorf(c *fiber.Ctx, codes int, message string, args ...interface{}) error 
 	return c.Status(codes).JSON(jsonMsg)
 }
 
-func Successf(c *fiber.Ctx, codes int, message string, args ...interface{}) error {
-	if !(codes >= 200 && codes < 300) {
+func Successf(c *fiber.Ctx, codes int, message string, args ...any) error {
+	if !(codes >= 200) && (codes < 300) {
 		return Errorf(c, codes, message, args...)
 	}
 	jsonMsg := &common.ResponseMessage{

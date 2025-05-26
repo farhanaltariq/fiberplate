@@ -1,10 +1,10 @@
 package routes
 
 import (
-	"github.com/farhanaltariq/fiberplate/controllers"
-	"github.com/farhanaltariq/fiberplate/database"
-	"github.com/farhanaltariq/fiberplate/middleware"
-	"github.com/farhanaltariq/fiberplate/services"
+	"github.com/farhanaltariq/fiberplate/app/controllers"
+	"github.com/farhanaltariq/fiberplate/app/database"
+	"github.com/farhanaltariq/fiberplate/app/middleware"
+	"github.com/farhanaltariq/fiberplate/app/services"
 	"github.com/gofiber/fiber/v2"
 )
 

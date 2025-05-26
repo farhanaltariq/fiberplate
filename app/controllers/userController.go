@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"github.com/farhanaltariq/fiberplate/common/codes"
-	"github.com/farhanaltariq/fiberplate/common/status"
-	"github.com/farhanaltariq/fiberplate/middleware"
+	"github.com/farhanaltariq/fiberplate/app/common/codes"
+	"github.com/farhanaltariq/fiberplate/app/common/status"
+	"github.com/farhanaltariq/fiberplate/app/middleware"
 	"github.com/gofiber/fiber/v2"
 )
 
