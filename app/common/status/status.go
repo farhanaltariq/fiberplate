@@ -7,27 +7,27 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func Errorf(c *fiber.Ctx, codes int, message string, args ...any) error {
+func Error(c *fiber.Ctx, codes int, message string, args ...any) error {
 	if codes >= 200 && codes < 300 {
-		return Successf(c, codes, message, args...)
+		return Success(c, codes, message, args...)
 	}
 
 	jsonMsg := &common.ResponseMessage{
 		Error:   true,
 		Code:    codes,
-		Message: fmt.Sprintf(message, args...),
+		Message: fmt.Sprint(message, args),
 	}
 	return c.Status(codes).JSON(jsonMsg)
 }
 
-func Successf(c *fiber.Ctx, codes int, message string, args ...any) error {
+func Success(c *fiber.Ctx, codes int, message string, args ...any) error {
 	if !(codes >= 200) && (codes < 300) {
-		return Errorf(c, codes, message, args...)
+		return Error(c, codes, message, args...)
 	}
 	jsonMsg := &common.ResponseMessage{
 		Error:   false,
 		Code:    codes,
-		Message: fmt.Sprintf(message, args...),
+		Message: fmt.Sprint(message, args),
 	}
 
 	return c.Status(codes).JSON(jsonMsg)

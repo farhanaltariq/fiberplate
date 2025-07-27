@@ -2,6 +2,7 @@
 
 run:
 	swag init && go run .
-
+build:
+	go build -o=./bin/app .
 test:
-	cd test && ginkgo
+	go test -v --cover ./...

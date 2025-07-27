@@ -19,5 +19,5 @@ func NewMiscController(service middleware.Services) MiscController {
 	return &controller{service}
 }
 func (server *controller) HealthCheck(c *fiber.Ctx) error {
-	return status.Successf(c, codes.OK, "Server Running")
+	return status.Success(c, codes.OK, "Server Running")
 }

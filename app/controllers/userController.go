@@ -16,5 +16,5 @@ func NewUserController(service middleware.Services) UserController {
 }
 
 func (s *controller) GetListUser(c *fiber.Ctx) error {
-	return status.Successf(c, codes.OK, "OK")
+	return status.Success(c, codes.OK, "OK")
 }

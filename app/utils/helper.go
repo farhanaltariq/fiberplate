@@ -36,7 +36,7 @@ func FormatMethod(c *fiber.Ctx) string {
 func GetEnv(key, fallback string) string {
 
 	if err := godotenv.Load(); err != nil {
-		if err := godotenv.Load("../.env"); err != nil {
+		if err := godotenv.Load("../../.env"); err != nil {
 			logrus.Errorln("Failed to load .env", err)
 			return fallback
 		}

@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/farhanaltariq/fiberplate/app/common/codes"
@@ -19,7 +18,7 @@ func CommonMiddleware(c *fiber.Ctx) error {
 	return c.Next()
 }
 
-func validateToken(tokenString string, jwtSecret []byte) error {
+func validateToken(c *fiber.Ctx, tokenString string, jwtSecret []byte) error {
 	token, err := jwt.ParseWithClaims(tokenString, &models.Claims{}, func(token *jwt.Token) (any, error) {
 		return jwtSecret, nil
 	})
@@ -30,8 +29,7 @@ func validateToken(tokenString string, jwtSecret []byte) error {
 
 	_, ok := token.Claims.(*models.Claims)
 	if !ok {
-		//lint:ignore ST1005 will sent to user
-		return fmt.Errorf("invalid token")
+		status.Error(c, codes.Unauthorized, "Unauthorized")
 	}
 
 	return nil
@@ -42,13 +40,13 @@ func AuthInterceptor(c *fiber.Ctx) error {
 	authHeader := c.Get("Authorization")
 
 	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
-		return status.Errorf(c, codes.Unauthorized, "Unauthorized")
+		return status.Error(c, codes.Unauthorized, "Unauthorized")
 	}
 
 	tokenString := authHeader[7:] // Remove "Bearer " prefix
 
-	if err := validateToken(tokenString, jwtSecret); err != nil {
-		return status.Errorf(c, codes.Unauthorized, "Unauthorized")
+	if err := validateToken(c, tokenString, jwtSecret); err != nil {
+		return err
 	}
 
 	return c.Next()
