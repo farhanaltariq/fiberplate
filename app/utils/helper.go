@@ -2,9 +2,7 @@ package utils
 
 import (
 	"os"
-	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/farhanaltariq/fiberplate/app/database/models"
@@ -107,49 +105,4 @@ func GenerateToken(user *models.User) (string, error) {
 		return "", err
 	}
 	return signed, nil
-}
-
-func RenameBaseUrlInFile(relativePath, baseUrl string) {
-	// Get the absolute path
-	absolutePath, err := filepath.Abs(relativePath)
-	if err != nil {
-		logrus.Errorln(err)
-		return
-	}
-
-	// Open the file
-	file, err := os.Open(absolutePath)
-	if err != nil {
-		logrus.Errorln(err)
-		return
-	}
-	defer file.Close()
-
-	// Read the file
-	data, err := os.ReadFile(absolutePath)
-	if err != nil {
-		logrus.Errorln(err)
-		return
-	}
-
-	// Replace base URL
-	newData := []byte(strings.ReplaceAll(string(data), "localhost:3000", baseUrl))
-
-	// Write the updated data back to the file
-	err = os.WriteFile(absolutePath, newData, 0644)
-	if err != nil {
-		logrus.Errorln(err)
-		return
-	}
-}
-
-func RenameBaseUrlSwagger(baseUrl string) {
-	// Rename base URL in swagger.json
-	RenameBaseUrlInFile("docs/swagger.json", baseUrl)
-
-	// Rename base URL in docs.go
-	RenameBaseUrlInFile("docs/docs.go", baseUrl)
-
-	// Rename base URL in swagger.yaml
-	RenameBaseUrlInFile("docs/swagger.yaml", baseUrl)
 }

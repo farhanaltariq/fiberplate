@@ -1,134 +1,163 @@
 package controllers
 
 import (
-	"encoding/json"
+	"context"
+	"net/http"
 
-	"github.com/farhanaltariq/fiberplate/app/common/codes"
-	"github.com/farhanaltariq/fiberplate/app/common/status"
+	"github.com/farhanaltariq/fiberplate/app/common"
 	"github.com/farhanaltariq/fiberplate/app/common/usertype"
 	"github.com/farhanaltariq/fiberplate/app/database/models"
 	"github.com/farhanaltariq/fiberplate/app/middleware"
 	"github.com/farhanaltariq/fiberplate/app/utils"
-	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
 )
 
+type RegisterInput struct {
+	Body models.Register
+}
+
+type RegisterOutput struct {
+	Body common.ResponseMessage
+}
+
+type LoginInput struct {
+	Body models.Login
+}
+
+type LoginOutput struct {
+	Body models.AuthenticationResponse
+}
+
 type AuthenticationController interface {
-	Register(c *fiber.Ctx) error
-	Login(c *fiber.Ctx) error
+	Register(ctx context.Context, input *RegisterInput) (*RegisterOutput, error)
+	Login(ctx context.Context, input *LoginInput) (*LoginOutput, error)
 }
 
 func NewAuthController(service middleware.Services) AuthenticationController {
 	return &controller{service}
 }
 
-// @Summary Register
-// @Description Register a new user
-// @Tags Authentication
-// @Accept json
-// @Param data body models.Register true "Register data"
-// @Produce json
-// @Success 200 {object} common.ResponseMessage
-// @Failure 400 {object} common.ResponseMessage
-// @Router /auth/register [post]
-func (s *controller) Register(c *fiber.Ctx) error {
-	auth := models.Register{}
-	if err := json.Unmarshal(c.Body(), &auth); err != nil {
-		return err
-	}
+func (s *controller) Register(ctx context.Context, input *RegisterInput) (*RegisterOutput, error) {
+	auth := input.Body
 
 	if auth.Password != auth.ConfirmPassword {
-		return status.Error(c, codes.BadRequest, "Password and confirm password does not match")
+		return nil, &common.ResponseMessage{
+			IsError: true,
+			Code:    http.StatusBadRequest,
+			Message: "Password and confirm password does not match",
+		}
 	}
 
-	authOrm := &models.Authentications{}
-	if err := json.Unmarshal(c.Body(), &authOrm); err != nil {
-		logrus.Errorln("Failed to unmarshal auth ORM", err)
-		return status.Error(c, codes.BadRequest, err.Error())
-	}
-	userOrm := models.User{}
-	if err := json.Unmarshal(c.Body(), &userOrm); err != nil {
-		logrus.Errorln("Failed to unmarshal user ORM", err)
-		return status.Error(c, codes.BadRequest, err.Error())
+	userOrm := models.User{
+		Username: auth.Username,
+		Email:    auth.Email,
+		Address:  auth.Country,
+		UserType: usertype.ADMIN,
 	}
 
 	data, err := s.UserService.GetDataByUsernameOrEmail(userOrm)
 	if err != nil || data.ID != 0 {
-		return status.Error(c, codes.BadRequest, "Username or email already used")
+		return nil, &common.ResponseMessage{
+			IsError: true,
+			Code:    http.StatusBadRequest,
+			Message: "Username or email already used",
+		}
 	}
 
-	// insert to user tables
-	userData := models.User{}
-	userOrm.UserType = usertype.ADMIN
-	if userData, err = s.UserService.InsertOrUpdate(userOrm); err != nil {
+	userData, err := s.UserService.InsertOrUpdate(userOrm)
+	if err != nil {
 		logrus.Errorln("Failed to register user", err)
-		return status.Error(c, codes.BadRequest, err.Error())
+		return nil, &common.ResponseMessage{
+			IsError: true,
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		}
 	}
 
 	pass, salt := utils.Encrypt(auth.Password)
-	authOrm.Password = pass
-	authOrm.Salt = salt
-	authOrm.UserId = userData.ID
+	authOrm := &models.Authentications{
+		Password: pass,
+		Salt:     salt,
+		UserId:   userData.ID,
+	}
 
 	if err := s.AuthService.InsertOrUpdate(*authOrm); err != nil {
-		logrus.Errorln("Failed to register user", err)
-		return status.Error(c, codes.BadRequest, err.Error())
+		logrus.Errorln("Failed to register auth", err)
+		return nil, &common.ResponseMessage{
+			IsError: true,
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		}
 	}
 
-	logrus.Infoln("User", userOrm)
-
-	return status.Success(c, codes.OK, "Success")
+	return &RegisterOutput{
+		Body: common.ResponseMessage{
+			IsError: false,
+			Code:    http.StatusOK,
+			Message: "Success",
+		},
+	}, nil
 }
 
-// @Summary Login
-// @Description Login
-// @Tags Authentication
-// @Security Authorization
-// @Accept json
-// @Param data body models.Login true "Login Data"
-// @Produce json
-// @Success 200 {object} models.AuthenticationResponse
-// @Failure 400 {object} common.ResponseMessage
-// @Router /auth/login [post]
-func (s *controller) Login(c *fiber.Ctx) error {
-	cred := models.Login{}
-
-	if err := json.Unmarshal(c.Body(), &cred); err != nil {
-		return status.Error(c, codes.BadRequest, err.Error())
-	}
+func (s *controller) Login(ctx context.Context, input *LoginInput) (*LoginOutput, error) {
+	cred := input.Body
 
 	if cred.UsernameOrEmail == "" {
-		return status.Error(c, codes.BadRequest, "Username or email is required")
+		return nil, &common.ResponseMessage{
+			IsError: true,
+			Code:    http.StatusBadRequest,
+			Message: "Username or email is required",
+		}
 	}
 
 	data, err := s.UserService.GetDataByUsernameOrEmail(models.User{Username: cred.UsernameOrEmail, Email: cred.UsernameOrEmail})
 	if err != nil || data == (models.User{}) {
-		return status.Error(c, codes.BadRequest, "Username or email not found")
+		return nil, &common.ResponseMessage{
+			IsError: true,
+			Code:    http.StatusBadRequest,
+			Message: "Username or email not found",
+		}
 	}
 
 	authData, err := s.AuthService.GetDataByUserId(data.ID)
 	if err != nil {
-		return status.Error(c, codes.BadRequest, err.Error())
+		return nil, &common.ResponseMessage{
+			IsError: true,
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}
 	}
 
 	pass, err := utils.Decrypt(authData.Password, authData.Salt)
 	if err != nil {
-		return status.Error(c, codes.BadRequest, err.Error())
+		return nil, &common.ResponseMessage{
+			IsError: true,
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}
 	}
 	if pass != cred.Password {
-		return status.Error(c, codes.BadRequest, "Invalid credentials")
+		return nil, &common.ResponseMessage{
+			IsError: true,
+			Code:    http.StatusBadRequest,
+			Message: "Invalid credentials",
+		}
 	}
 
 	token, err := utils.GenerateToken(&data)
 	if err != nil {
-		return status.Error(c, codes.BadRequest, err.Error())
+		return nil, &common.ResponseMessage{
+			IsError: true,
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}
 	}
 
-	res := models.AuthenticationResponse{
-		Status:      "Success",
-		AccessToken: token,
-		ExpiredAt:   utils.GetExpirationTime().Format("2006-01-02 15:04:05"),
-	}
-
-	return c.Status(codes.OK).JSON(res)
+	return &LoginOutput{
+		Body: models.AuthenticationResponse{
+			Status:      "Success",
+			AccessToken: token,
+			ExpiredAt:   utils.GetExpirationTime().Format("2006-01-02 15:04:05"),
+		},
+	}, nil
 }

@@ -13,7 +13,7 @@ func Error(c *fiber.Ctx, codes int, message string, args ...any) error {
 	}
 
 	jsonMsg := &common.ResponseMessage{
-		Error:   true,
+		IsError: true,
 		Code:    codes,
 		Message: fmt.Sprint(message, args),
 	}
@@ -25,7 +25,7 @@ func Success(c *fiber.Ctx, codes int, message string, args ...any) error {
 		return Error(c, codes, message, args...)
 	}
 	jsonMsg := &common.ResponseMessage{
-		Error:   false,
+		IsError: false,
 		Code:    codes,
 		Message: fmt.Sprint(message, args),
 	}

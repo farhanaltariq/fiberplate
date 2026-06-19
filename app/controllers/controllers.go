@@ -1,14 +1,21 @@
 package controllers
 
 import (
-	"github.com/farhanaltariq/fiberplate/app/common/codes"
-	"github.com/farhanaltariq/fiberplate/app/common/status"
+	"context"
+	"net/http"
+
+	"github.com/farhanaltariq/fiberplate/app/common"
 	"github.com/farhanaltariq/fiberplate/app/middleware"
-	"github.com/gofiber/fiber/v2"
 )
 
+type HealthCheckInput struct{}
+
+type HealthCheckOutput struct {
+	Body common.ResponseMessage
+}
+
 type MiscController interface {
-	HealthCheck(c *fiber.Ctx) error
+	HealthCheck(ctx context.Context, input *HealthCheckInput) (*HealthCheckOutput, error)
 }
 
 type controller struct {
@@ -18,6 +25,13 @@ type controller struct {
 func NewMiscController(service middleware.Services) MiscController {
 	return &controller{service}
 }
-func (server *controller) HealthCheck(c *fiber.Ctx) error {
-	return status.Success(c, codes.OK, "Server Running")
+
+func (server *controller) HealthCheck(ctx context.Context, input *HealthCheckInput) (*HealthCheckOutput, error) {
+	return &HealthCheckOutput{
+		Body: common.ResponseMessage{
+			IsError: false,
+			Code:    http.StatusOK,
+			Message: "Server Running",
+		},
+	}, nil
 }
