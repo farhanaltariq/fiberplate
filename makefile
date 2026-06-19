@@ -1,7 +1,7 @@
 .PHONY: run test
 
 run:
-	swag init && go run .
+	go run .
 build:
 	go build -o=./bin/app .
 test:

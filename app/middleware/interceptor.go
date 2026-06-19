@@ -3,7 +3,6 @@ package middleware
 import (
 	"strings"
 
-	"github.com/farhanaltariq/fiberplate/app/common/codes"
 	"github.com/farhanaltariq/fiberplate/app/common/status"
 	"github.com/farhanaltariq/fiberplate/app/database/models"
 	"github.com/farhanaltariq/fiberplate/app/utils"
@@ -29,18 +28,24 @@ func validateToken(c *fiber.Ctx, tokenString string, jwtSecret []byte) error {
 
 	_, ok := token.Claims.(*models.Claims)
 	if !ok {
-		status.Error(c, codes.Unauthorized, "Unauthorized")
+		status.Error(c, fiber.ErrUnauthorized.Code, "Unauthorized")
 	}
 
 	return nil
 }
 
 func AuthInterceptor(c *fiber.Ctx) error {
+	path := c.Path()
+	// Skip auth for public routes: health check, authentication endpoints, and API documentation
+	if path == "/api" || path == "/api/" || strings.HasPrefix(path, "/api/auth/") || strings.HasPrefix(path, "/api/swagger") || strings.HasPrefix(path, "/api/openapi") || strings.HasPrefix(path, "/docs") || strings.HasPrefix(path, "/schemas") {
+		return c.Next()
+	}
+
 	jwtSecret := []byte(utils.GetEnv("JWT_SECRET", "secret"))
 	authHeader := c.Get("Authorization")
 
 	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
-		return status.Error(c, codes.Unauthorized, "Unauthorized")
+		return status.Error(c, fiber.ErrUnauthorized.Code, "Unauthorized")
 	}
 
 	tokenString := authHeader[7:] // Remove "Bearer " prefix
