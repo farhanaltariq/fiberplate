@@ -1,0 +1,11 @@
+.env
+.git
+.gitignore
+README.md
+CONTRIBUTING.md
+ Dockerfile
+.dockerignore
+*.log
+bin/
+*.test
+*.out
